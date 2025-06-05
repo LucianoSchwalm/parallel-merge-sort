@@ -33,7 +33,7 @@
 extern double get_time (void);
 void merge (int a[], int size, int temp[]);
 void insertion_sort (int a[], int size);
-void mergesort_serial (int a[], int size, int temp[]);
+void bubblesort_serial (int a[], int size);
 void mergesort_parallel_mpi (int a[], int size, int temp[],
 			     int level, int my_rank, int max_rank,
 			     int tag, MPI_Comm comm);
@@ -110,6 +110,25 @@ main (int argc, char *argv[])
   return 0;
 }
 
+void bs(int n, int *vetor)
+{
+  int c = 0, d, troca, trocou = 1;
+
+  while (c < (n - 1) && trocou)
+  {
+    trocou = 0;
+    for (d = 0; d < n - c - 1; d++)
+      if (vetor[d] > vetor[d + 1])
+      {
+        troca = vetor[d];
+        vetor[d] = vetor[d + 1];
+        vetor[d + 1] = troca;
+        trocou = 1;
+      }
+    c++;
+  }
+}
+
 // Root process code
 void
 run_root_mpi (int a[], int size, int temp[], int max_rank, int tag,
@@ -170,7 +189,7 @@ mergesort_parallel_mpi (int a[], int size, int temp[],
   int helper_rank = my_rank + pow (2, level);
   if (helper_rank > max_rank)
     {				// no more processes available
-      mergesort_serial (a, size, temp);
+      bubblesort_serial(a, size);
     }
   else
     {
@@ -194,19 +213,8 @@ mergesort_parallel_mpi (int a[], int size, int temp[],
   return;
 }
 
-void
-mergesort_serial (int a[], int size, int temp[])
-{
-  // Switch to insertion sort for small arrays
-  if (size <= SMALL)
-    {
-      insertion_sort (a, size);
-      return;
-    }
-  mergesort_serial (a, size / 2, temp);
-  mergesort_serial (a + size / 2, size - size / 2, temp);
-  // Merge the two sorted subarrays into a temp array
-  merge (a, size, temp);
+void bubblesort_serial(int a[], int size) {
+  bs(size, a);
 }
 
 void
