@@ -100,7 +100,11 @@ void main(int argc, char **argv)
   // Recebe vetor se não for raiz
   if (my_rank != 0)
   {
-    MPI_Recv(vetor, tam_vetor, MPI_INT, pai, 0, MPI_COMM_WORLD, &status);
+    MPI_Probe(pai, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    tam_vetor = status.MPI_TAG;
+    free(vetor); // libera vetor alocado anteriormente
+    vetor = (int *)malloc(sizeof(int) * tam_vetor);
+    MPI_Recv(vetor, tam_vetor, MPI_INT, pai, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     MPI_Get_count(&status, MPI_INT, &tam_vetor); // descubro tamanho da mensagem recebida
   }
 
@@ -113,12 +117,12 @@ void main(int argc, char **argv)
     int metade = tam_vetor / 2;
 
     // Envia para filhos
-    MPI_Send(&vetor[0], metade, MPI_INT, filho_esq, 0, MPI_COMM_WORLD);
-    MPI_Send(&vetor[metade], metade, MPI_INT, filho_dir, 0, MPI_COMM_WORLD);
+    MPI_Send(&vetor[0], metade, MPI_INT, filho_esq, metade, MPI_COMM_WORLD);
+    MPI_Send(&vetor[metade], metade, MPI_INT, filho_dir, metade, MPI_COMM_WORLD);
 
     // Recebe dos filhos
-    MPI_Recv(&vetor[0], metade, MPI_INT, filho_esq, 0, MPI_COMM_WORLD, &status);
-    MPI_Recv(&vetor[metade], metade, MPI_INT, filho_dir, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&vetor[0], metade, MPI_INT, filho_esq, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    MPI_Recv(&vetor[metade], metade, MPI_INT, filho_dir, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
     // Intercala as duas metades
     int *temp = interleaving(vetor, tam_vetor);
