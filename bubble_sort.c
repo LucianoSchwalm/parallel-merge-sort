@@ -105,10 +105,10 @@ void main(int argc, char **argv)
   // Recebe vetor se não for raiz
   if (my_rank != 0)
   {
-    MPI_Probe(pai, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    tam_vetor = status.MPI_TAG;
-    free(vetor); // libera vetor alocado anteriormente
-    vetor = (int *)malloc(sizeof(int) * tam_vetor);
+    // MPI_Probe(pai, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    // tam_vetor = status.MPI_TAG;
+    // free(vetor); // libera vetor alocado anteriormente
+    // vetor = (int *)malloc(sizeof(int) * tam_vetor);
     MPI_Recv(vetor, tam_vetor, MPI_INT, pai, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     MPI_Get_count(&status, MPI_INT, &tam_vetor); // descubro tamanho da mensagem recebida
   }
@@ -122,6 +122,7 @@ void main(int argc, char **argv)
     int metade = tam_vetor / 2;
 
     // Envia para filhos
+    printf("Process %d sending to children %d and %d\n", my_rank, filho_esq, filho_dir);
     MPI_Send(&vetor[0], metade, MPI_INT, filho_esq, metade, MPI_COMM_WORLD);
     MPI_Send(&vetor[metade], metade, MPI_INT, filho_dir, metade, MPI_COMM_WORLD);
 
@@ -137,6 +138,7 @@ void main(int argc, char **argv)
   // Se não for raiz, envia vetor ordenado para o pai
   if (my_rank != 0)
   {
+    printf("Process %d sending sorted vector to parent %d\n", my_rank, pai);
     MPI_Send(vetor, tam_vetor, MPI_INT, pai, 0, MPI_COMM_WORLD);
   }
   // else
