@@ -5,6 +5,8 @@
 #define DEBUG 1       // comentar esta linha quando for medir tempo
 #define ARRAY_SIZE 40 // trabalho final com o valores 10.000, 100.000, 1.000.000
 
+extern double get_time(void);
+
 void bs(int n, int *vetor)
 {
   int c = 0, d, troca, trocou = 1;
@@ -71,6 +73,7 @@ void main(int argc, char **argv)
   int delta = 10;
   int my_rank, num_procs;
   MPI_Status status;
+  double start_time, end_time;
 
   if (argc > 1)
   {
@@ -94,6 +97,8 @@ void main(int argc, char **argv)
 
   if (my_rank == 0)
   {
+
+    start_time = get_time();
     Inicializa(vetor, tam_vetor);
   }
 
@@ -134,10 +139,16 @@ void main(int argc, char **argv)
   {
     MPI_Send(vetor, tam_vetor, MPI_INT, pai, 0, MPI_COMM_WORLD);
   }
-  else
-  {
-    Mostra(vetor, tam_vetor);
-  }
+  // else
+  // {
+  //   Mostra(vetor, tam_vetor);
+  // }
 
   MPI_Finalize();
+  if (my_rank == 0)
+  {
+    end_time = get_time();
+    printf("Tempo total: %.6f segundos\n", end_time - start_time);
+  }
+  free(vetor); // libera vetor alocado
 }
